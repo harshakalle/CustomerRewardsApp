@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
 @Slf4j
 public class RewardsService {
@@ -15,25 +18,28 @@ public class RewardsService {
     RewardsRepository rewardsRepository;
 
     //Method to calculate and store reward points
-    public CustomerRewards getRewardPoints(double price) {
+    public CustomerRewards getRewardPoints(CustomerRewards customerRewards) {
 
-        CustomerRewards customerRewards = new CustomerRewards();
-        if (price > 50 && price > 100) {
-            int rewardPoints = (int) ((price - 50) * 1 + (price - 100) * 1);
+        if (customerRewards.getPrice() > 50 && customerRewards.getPrice() > 100) {
+            int rewardPoints = (int) ((customerRewards.getPrice() - 50) * 1 + (customerRewards.getPrice() - 100) * 1);
+            customerRewards.setLocalDateTime(LocalDateTime.now());
             customerRewards.setRewardPoints(rewardPoints);
-            customerRewards.setPrice(price);
             log.info("Added " + rewardPoints + " to the customer");
             return rewardsRepository.save(customerRewards);
-        } else if(price > 50) {
-            int rewardPoints = (int) ((price - 50) * 1 + (price - 100) * 1);
+        } else if(customerRewards.getPrice() > 50) {
+            int rewardPoints = (int) ((customerRewards.getPrice() - 50) * 1);
+            customerRewards.setLocalDateTime(LocalDateTime.now());
             customerRewards.setRewardPoints(rewardPoints);
-            customerRewards.setPrice(price);
             log.info("Added " + rewardPoints + " to the customer");
             return rewardsRepository.save(customerRewards);
-        } else if (price <= 0){
+        } else if (customerRewards.getPrice() <= 0){
             //Throwing Exception when wrong price received in the request
-            throw new InvalidPriceException(price);
+            throw new InvalidPriceException(customerRewards.getPrice());
         }
         return customerRewards;
+    }
+
+    public List<CustomerRewards> getAllCustomers() {
+        return  rewardsRepository.findAll();
     }
 }
